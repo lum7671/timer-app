@@ -384,9 +384,13 @@ class MVClockView: NSControl {
   }
 
   private func updateTimeLabel() {
+    guard let timerTime = self.timerTime else {
+      timerTimeLabel.string = ""
+      return
+    }
     let formatter = DateFormatter()
     formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "jj:mm", options: 0, locale: Locale.current)
-    let timeString = formatter.string(from: self.timerTime ?? Date())
+    let timeString = formatter.string(from: timerTime)
     timerTimeLabel.string = timeString
 
     // If the local time format includes an " AM" or " PM" suffix, show the suffix with a smaller font

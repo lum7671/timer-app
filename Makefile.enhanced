@@ -1,0 +1,81 @@
+.PHONY: default clean build install test cli-build cli-install shell-install
+
+# 기본 타겟 - GUI 앱 빌드
+default: clean build open
+
+# GUI 앱 관련 타겟들
+clean:
+	xcodebuild -quiet clean 
+
+build: clean
+	xcodebuild -quiet build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+
+open: build
+	open ./build/Release/
+
+# CLI 버전 관련 타겟들
+cli-build:
+	@echo "🔨 Swift CLI 버전 빌드 중..."
+	cd TimerCLI && swift build -c release
+	@echo "✅ CLI 빌드 완료: TimerCLI/.build/release/TimerCLI"
+
+cli-install: cli-build
+	@echo "📦 CLI 도구 설치 중..."
+	sudo cp TimerCLI/.build/release/TimerCLI /usr/local/bin/timer
+	@echo "✅ CLI 설치 완료: /usr/local/bin/timer"
+	@echo "사용법: timer --time 14:30 --message \"회의 시간\""
+
+shell-install:
+	@echo "📦 Shell 스크립트 버전 설치 중..."
+	chmod +x timer-simple.sh
+	sudo cp timer-simple.sh /usr/local/bin/timer-shell
+	@echo "✅ Shell 스크립트 설치 완료: /usr/local/bin/timer-shell"
+	@echo "사용법: timer-shell 14:30 \"회의 시간\""
+
+test: cli-build
+	@echo "🧪 CLI 도구 테스트 중..."
+	@echo "1분 후 테스트 알람:"
+	TimerCLI/.build/release/TimerCLI --duration 1 --message "테스트 알람입니다!"
+
+# 전체 설치 (CLI + Shell)
+install: cli-install shell-install
+	@echo "🎉 모든 타이머 도구 설치 완료!"
+	@echo ""
+	@echo "사용 가능한 명령어:"
+	@echo "  timer --time 14:30          # Swift CLI 버전"
+	@echo "  timer-shell 14:30           # Shell 스크립트 버전"
+	@echo ""
+	@echo "도움말:"
+	@echo "  timer --help"
+	@echo "  timer-shell --help"
+
+# 개발용 - 빠른 테스트
+dev-test:
+	cd TimerCLI && swift run TimerCLI --duration 1 --message "개발 테스트" --verbose
+
+# 정리
+clean-all: clean
+	@echo "🧹 전체 정리 중..."
+	cd TimerCLI && swift package clean
+	@echo "✅ 정리 완료"
+
+# 도움말
+help:
+	@echo "Timer App Makefile"
+	@echo ""
+	@echo "GUI 앱 관련:"
+	@echo "  make                # GUI 앱 빌드 및 폴더 열기"
+	@echo "  make build          # GUI 앱 빌드만"
+	@echo "  make clean          # GUI 앱 정리"
+	@echo ""
+	@echo "CLI 도구 관련:"
+	@echo "  make cli-build      # Swift CLI 빌드"
+	@echo "  make cli-install    # Swift CLI 설치"
+	@echo "  make shell-install  # Shell 스크립트 설치"
+	@echo "  make install        # 모든 CLI 도구 설치"
+	@echo "  make test           # CLI 도구 테스트"
+	@echo "  make dev-test       # 개발용 빠른 테스트"
+	@echo ""
+	@echo "기타:"
+	@echo "  make clean-all      # 전체 정리"
+	@echo "  make help           # 이 도움말"

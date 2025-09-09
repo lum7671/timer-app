@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Timer.app CLI launcher script
+# Usage: timer-launch --time 19:30
+#        timer-launch --duration 30
+#        timer-launch --seconds 1800
+
+# Timer.app의 경로 찾기
+TIMER_APP_PATH=""
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# 현재 디렉토리에서 찾기
+if [ -f "$SCRIPT_DIR/build/Release/Timer.app/Contents/MacOS/Timer" ]; then
+    TIMER_APP_PATH="$SCRIPT_DIR/build/Release/Timer.app"
+# 개발 디렉토리에서 찾기
+elif [ -f "/Users/1001028/git/timer-app/build/Release/Timer.app/Contents/MacOS/Timer" ]; then
+    TIMER_APP_PATH="/Users/1001028/git/timer-app/build/Release/Timer.app"
+# 설치된 Timer.app 찾기
+else
+    TIMER_APP_PATH=$(mdfind "kMDItemCFBundleIdentifier == 'com.michaelvillar.Timer'" | head -1)
+fi
+
+if [ -z "$TIMER_APP_PATH" ]; then
+    echo "❌ Timer.app을 찾을 수 없습니다."
+    echo "Timer.app을 빌드하거나 설치해주세요."
+    exit 1
+fi
+
+echo "🚀 Timer.app 실행: $TIMER_APP_PATH"
+echo "📝 Arguments: $@"
+
+# Timer.app을 arguments와 함께 실행
+open -a "$TIMER_APP_PATH" --args "$@"
+
+echo "✅ Timer.app이 성공적으로 실행되었습니다!"
